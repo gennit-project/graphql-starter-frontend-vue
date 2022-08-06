@@ -232,14 +232,11 @@ export default defineComponent({
       });
     },
     updateFormValues(data: CreateEditPostFormValues) {
-      console.log("data ", data);
       const existingValues = this.formValues;
-      console.log("existingValues ", existingValues);
       this.formValues = {
         ...existingValues,
         ...data,
       };
-      console.log("newValues ", this.formValues);
     },
   },
 });

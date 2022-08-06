@@ -67,8 +67,8 @@ export default defineComponent({
             where: {
               node: {
                 username: formValues.value.poster,
-              }
-            }
+              },
+            },
           },
         },
       };
@@ -87,8 +87,7 @@ export default defineComponent({
           createPostInput: createPostInput.value,
         },
         update: (cache: any, result: any) => {
-          console.log('result after create post ', result)
-          const newPost: PostData = result.data.createPosts.posts[0]
+          const newPost: PostData = result.data.createPosts.posts[0];
 
           cache.modify({
             fields: {
@@ -119,11 +118,8 @@ export default defineComponent({
       };
     });
 
-
     onDone((response: any) => {
-      console.log('response in onDone ', response)
       const newPostId = response.data.createPosts.posts[0].id;
-      
 
       router.push({
         name: "PostDetail",
@@ -156,14 +152,12 @@ export default defineComponent({
       });
     },
     updateFormValues(data: CreatePostFormValues) {
-      console.log("data ", data);
       const existingValues = this.formValues;
-      console.log("existingValues ", existingValues);
+
       this.formValues = {
         ...existingValues,
         ...data,
       };
-      console.log("newValues ", this.formValues);
     },
   },
 });
