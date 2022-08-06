@@ -177,7 +177,7 @@ export default defineComponent({
               <template v-slot:content>
                 <TextEditor
                   class="mb-3"
-                  :initial-value="formValues.description"
+                  :initial-value="formValues.description || ''"
                   @update="$emit('updateFormValues', { description: $event })"
                 />
               </template>
