@@ -134,7 +134,7 @@ export default defineComponent({
           <h2 class="text-lg mb-2 text-gray-700">
             {{ post.title }}
           </h2>
-          <div v-if="post.description" class="body prose prose-sm min-height-min">
+          <div v-if="post.description" class="body prose min-height-min">
             <Markdown :source="post.description" linkify html />
           </div>
           <Tag

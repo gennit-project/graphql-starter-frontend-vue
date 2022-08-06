@@ -29,6 +29,7 @@ export default defineComponent({
 
     const {
       result: getPostResult,
+      onResult: onGetPostResult,
       error: getPostError,
       loading: getPostLoading,
     } = useQuery(GET_POST, { postId });
@@ -78,8 +79,8 @@ export default defineComponent({
     const formValues = ref<CreateEditPostFormValues>(getDefaultFormValues());
 
     // Populate the form with existing data after it is loaded.
-    watch(getPostResult, (value) => {
-      const post = value.posts[0];
+    onGetPostResult((value) => {
+      const post = value.data.posts[0];
 
       formValues.value = {
         title: post.title,
