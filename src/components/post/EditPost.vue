@@ -1,7 +1,7 @@
 <script lang="ts">
-import { defineComponent, ref, computed } from "vue";
+import { defineComponent, ref, computed, watch } from "vue";
 import { GET_POST } from "@/graphQLData/post/queries";
-
+import { UPDATE_POST } from "@/graphQLData/post/mutations";
 import {
   useQuery,
   useMutation,
@@ -12,8 +12,7 @@ import { useRoute, useRouter } from "vue-router";
 import { TagData } from "@/types/tagTypes";
 import { apolloClient } from "@/main";
 
-import { PostData } from "@/types/postTypes";
-import { DateTime } from "luxon";
+import { PostData, CreateEditPostFormValues } from "@/types/postTypes";
 import CreateEditFormFields from "./CreateEditFormFields.vue";
 
 export default defineComponent({
@@ -27,76 +26,91 @@ export default defineComponent({
     const route = useRoute();
     const router = useRouter();
     const postId: string | string[] = route.params.postId;
-    const username = "cluse";
 
     const {
-      result,
-      loading: postLoading,
-      error: postError,
-    } = useQuery(GET_POST, {
-      id: postId,
-    });
+      result: getPostResult,
+      error: getPostError,
+      loading: getPostLoading,
+    } = useQuery(GET_POST, { postId });
 
-    const postData = computed(() => {
-      if (!result.value || !result.value.posts || !result.value.posts[0]) {
+    const post = computed(() => {
+      if (getPostError.value || getPostLoading.value) {
         return null;
       }
-      return result.value.posts[0];
+      return getPostResult.value.posts[0];
     });
 
+    // Remember the existing tags so that if the user removes
+    // one or more tags, we will know to manually disconnect
+    // the nodes in the async call when the post is updated.
     const existingTags = computed(() => {
-      if (!postData.value || !postData.value.Tags) {
+      if (getPostError.value || getPostLoading.value || !post.value.Tags) {
         return [];
       }
-      return postData.value.Tags.map((tag: TagData) => {
+      return post.value.Tags.map((tag: TagData) => {
         return tag.text;
       });
     });
 
-    console.log("existing ", {
-      existingTags: existingTags.value,
-    });
-
-    // The form fields in the edit form are initialized
-    // with the existing values.
-    const title = ref(postData.value.title);
-    const description = ref(postData.value.description);
-    const selectedTags = ref(existingTags.value);
-    const startTime = ref(postData.value?.startTime);
-    const endTime = ref(postData.value?.endTime);
-
-    const startTimePieces = computed(() => {
-      const startTimeObj = DateTime.fromISO(startTime.value);
-      const { year, month, day, weekday, hour } = startTimeObj;
-
+    const getDefaultFormValues = () => {
+      // If the post data is already loaded, start with
+      // the existing values. This will be used if you load the page,
+      // navigate away and come back.
+      if (post.value) {
+        return {
+          title: post.value.title,
+          description: post.value.description,
+          selectedTags: post.value.Tags.map((tag: TagData) => {
+            return tag.text;
+          }),
+        };
+      }
+      // If the post data is loading, start with empty values. These
+      // will be overwritten by the watch function when the post
+      // data is loaded.
       return {
-        startTimeYear: year.toString(),
-        startTimeMonth: month.toString(),
-        startTimeDayOfMonth: day.toString(),
-        startTimeDayOfWeek: weekday.toString(),
-        startTimeHourOfDay: hour,
+        title: "",
+        description: "",
+        selectedTags: [],
+      };
+    }
+
+    const formValues = ref<CreateEditPostFormValues>(getDefaultFormValues());
+
+    // Populate the form with existing data after it is loaded.
+    watch(getPostResult, (value) => {
+      const post = value.posts[0];
+
+      formValues.value = {
+        title: post.title,
+        description: post.description,
+        selectedTags: post.Tags.map((tag: TagData) => {
+          return tag.text;
+        }),
       };
     });
 
     const updatePostInput = computed(() => {
-      const tagConnections = selectedTags.value.map((tag: string) => {
-        return {
-          onCreate: {
-            node: {
-              text: tag,
+      const tagConnections = formValues.value.selectedTags.map(
+        (tag: string) => {
+          return {
+            onCreate: {
+              node: {
+                text: tag,
+              },
             },
-          },
-          where: {
-            node: {
-              text: tag,
+            where: {
+              node: {
+                text: tag,
+              },
             },
-          },
-        };
-      });
+          };
+        }
+      );
 
       const tagDisconnections = existingTags.value
         .filter((tag: string) => {
-          return !selectedTags.value.includes(tag);
+          return !formValues.value.selectedTags.includes(tag);
         })
         .map((tag: string) => {
           return {
@@ -114,16 +128,8 @@ export default defineComponent({
           title prevents the empty string from being created on the back
           end if the title is not provided.
         */
-        title: title.value || null,
-        description: description.value || null,
-        startTime: startTime.value || null,
-        startTimeYear: startTimePieces.value.startTimeYear || null,
-        startTimeMonth: startTimePieces.value.startTimeMonth || null,
-        startTimeDayOfMonth: startTimePieces.value.startTimeDayOfMonth || null,
-        startTimeDayOfWeek: startTimePieces.value.startTimeDayOfWeek || null,
-        startTimeHourOfDay: startTimePieces.value.startTimeHourOfDay || null,
-        endTime: endTime.value || null,
-        canceled: false,
+        title: formValues.value.title || null,
+        description: formValues.value.description || null,
         Tags: {
           connectOrCreate: tagConnections,
           disconnect: tagDisconnections,
@@ -147,24 +153,6 @@ export default defineComponent({
       return input;
     }); // End of updatePostInput
 
-    const UPDATE_POST = gql`
-      mutation ($updatePostInput: PostUpdateInput, $eventWhere: PostWhere) {
-        updatePosts(update: $updatePostInput, where: $eventWhere) {
-          posts {
-            id
-            title
-            description
-            Poster {
-              username
-            }
-            Tags {
-              text
-            }
-          }
-        }
-      }
-    `;
-
     const {
       mutate: updatePost,
       error: updatePostError,
@@ -175,7 +163,7 @@ export default defineComponent({
         variables: {
           updatePostInput: updatePostInput.value,
           postWhere: {
-            id: postData.value.id,
+            id: postId,
           },
         },
         update: (cache: any, result: any) => {
@@ -212,7 +200,6 @@ export default defineComponent({
     });
 
     onDone((response: any) => {
-
       const newPostId = response.data.updatePosts.posts[0].id;
       router.push({
         name: "PostDetail",
@@ -223,21 +210,14 @@ export default defineComponent({
     });
 
     return {
-      postData,
-      postError,
-      postLoading,
-      description,
-      endTime,
+      getPostError,
+      getPostLoading,
+      formValues,
+      post,
       router,
-      selectedTags,
-      startTime,
-      startTimePieces,
-      title,
-      touched: false,
       updatePost,
       updatePostError,
       updatePostInput,
-      username,
     };
   },
 
@@ -245,46 +225,34 @@ export default defineComponent({
     async submit() {
       this.updatePost();
     },
-    updateTitle(updated: String) {
-      this.title = updated;
-    },
-    updateDescription(updated: string) {
-      this.description = updated;
-    },
-    setSelectedTags(tag: Array<string>) {
-      console.log('set selected tags ', tag)
-      this.selectedTags = tag;
-    },
     cancel() {
-        this.router.push({
-          name: "SearchPosts",
-        });
+      this.router.push({
+        name: "SearchPosts",
+      });
+    },
+    updateFormValues(data: CreateEditPostFormValues) {
+      console.log("data ", data);
+      const existingValues = this.formValues;
+      console.log("existingValues ", existingValues);
+      this.formValues = {
+        ...existingValues,
+        ...data,
+      };
+      console.log("newValues ", this.formValues);
     },
   },
 });
 </script>
 <template>
-  <div>
-    <div v-if="postLoading">Loading...</div>
-    <div v-else-if="postError">
-      <div v-for="(error, i) of postError?.graphQLErrors" :key="i">
-        {{ error.message }}
-      </div>
-    </div>
-    <CreateEditFormFields
-      v-else
-      :create-post-error="null"
-      :description="description"
-      :edit-mode="true"
-      :post-data="postData"
-      :post-error="postError"
-      :post-loading="postLoading"
-      :selected-tags="selectedTags"
-      @cancel="cancel"
-      @setSelectedTags="setSelectedTags"
-      @submit="submit"
-      @updateDescription="updateDescription"
-      @updateTitle="updateTitle"
-    />
-  </div>
+  <CreateEditFormFields
+    :edit-mode="true"
+    :post-data="post"
+    :post-loading="getPostLoading"
+    :get-post-error="getPostError"
+    :update-post-error="updatePostError"
+    :form-values="formValues"
+    @cancel="cancel"
+    @submit="submit"
+    @updateFormValues="updateFormValues"
+  />
 </template>

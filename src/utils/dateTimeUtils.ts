@@ -34,48 +34,9 @@ const getDatePieces = (startTimeObj: any) => {
   };
 };
 
-const formatAbbreviatedDuration = (postDurationObj: Duration) => {
-  const { hours, minutes } = postDurationObj;
-
-  if (hours === 0) {
-    return `${minutes}m`;
-  }
-  if (hours === 1) {
-    if (minutes > 0) {
-      return `1h ${minutes}m`;
-    }
-    return "1h";
-  }
-  if (hours > 1) {
-    if (minutes > 0) {
-      return `${hours}h ${minutes}m`;
-    }
-    return `${hours}h`;
-  }
-};
-
-
-// This function allows posts to be
-// sorted in chronological order.
-const compareDate = (e1: PostData, e2: PostData) => {
-  const start1 = DateTime.fromISO(e1.startTime);
-  const start2 = DateTime.fromISO(e2.startTime);
-  if (start1 < start2) {
-    return -1;
-  }
-  if (start1 > start2) {
-    return 1;
-  }
-  return 0;
-};
 
 export {
-  formatDuration,
-  formatAbbreviatedDuration,
   relativeTime,
   relativeTimeHoursAndMinutes,
-  durationHoursAndMinutes,
-  getDurationObj,
-  compareDate,
   getDatePieces
 };

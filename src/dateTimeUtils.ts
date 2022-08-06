@@ -80,16 +80,6 @@ const formatAbbreviatedDuration = (postDurationObj: typeof DateTime) => {
     return `${hours}h`;
   }
 };
-
-const getDurationObj = (startTime: string, endTime: string) => {
-  const startTimeObj = DateTime.fromISO(startTime);
-  const endTimeObj = DateTime.fromISO(endTime);
-  const interval = Interval.fromDateTimes(startTimeObj, endTimeObj);
-  const postDuration = interval.toDuration(["hours", "minutes"]);
-  const postDurationObj = postDuration.toObject();
-  return postDurationObj;
-};
-
 // This function allows posts to be
 // sorted in chronological order.
 const compareDate = (e1: any, e2: any) => {

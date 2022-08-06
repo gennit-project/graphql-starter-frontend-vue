@@ -111,19 +111,6 @@ export default defineComponent({
             Tags {
               text
             }
-            CommentSections {
-              id
-              CommentsAggregate {
-                count
-              }
-              OriginalPost {
-                __typename
-                ... on Post {
-                  id
-                  title
-                }
-              }
-            }
           }
         }`;
       return str;
@@ -222,43 +209,41 @@ export default defineComponent({
   <div class="container">
     <div v-if="postLoading">Loading...</div>
     <ErrorBanner class="mt-2" v-else-if="postError" :text="postError.message" />
-    <div v-else class="inline-flex space-x-2">
-      <div class="items-center align-middle mt-1">
-        <FilterChip
-          :label="tagLabel"
-          :highlighted="tagLabel !== defaultFilterLabels.tags"
-        >
-          <template v-slot:icon>
-            <TagIcon />
-          </template>
-          <template v-slot:content>
-            <TagPicker
-              :tag-options="tagOptionLabels"
-              :selected-tags="selectedTags"
-              @setSelectedTags="setSelectedTags"
-            />
-          </template>
-        </FilterChip>
+    <div v-else >
+      <div class="inline-flex space-x-2">
+        <div class="items-center align-middle mt-1">
+          <FilterChip
+            :label="tagLabel"
+            :highlighted="tagLabel !== defaultFilterLabels.tags"
+          >
+            <template v-slot:icon>
+              <TagIcon />
+            </template>
+            <template v-slot:content>
+              <TagPicker
+                :tag-options="tagOptionLabels"
+                :selected-tags="selectedTags"
+                @setSelectedTags="setSelectedTags"
+              />
+            </template>
+          </FilterChip>
+        </div>
+        <div class="items-center align-middle mt-1">
+          <CreateButton :to="createPostPath" :label="'Create Post'" />
+        </div>
       </div>
-      <div class="items-center align-middle mt-1">
-        <CreateButton :to="createPostPath" :label="'Create Post'" />
+      <PostList
+        id="listView"
+        class="relative text-lg"
+        :posts="postResult.posts"
+        :selected-tags="selectedTags"
+        @filterByTag="filterByTag"
+      />
+      <div class="grid justify-items-stretch">
+        <button class="justify-self-center" @click="loadMore">
+          {{ reachedEndOfResults ? "There are no more results." : "Load more" }}
+        </button>
       </div>
-    </div>
-    <PostList
-      id="listView"
-      v-if="postResult && postResult.posts"
-      class="relative text-lg"
-      :posts="postResult.posts"
-      :selected-tags="selectedTags"
-      @filterByTag="filterByTag"
-    />
-    <div
-      v-if="postResult && postResult.posts"
-      class="grid justify-items-stretch"
-    >
-      <button class="justify-self-center" @click="loadMore">
-        {{ reachedEndOfResults ? "There are no more results." : "Load more" }}
-      </button>
     </div>
   </div>
 </template>

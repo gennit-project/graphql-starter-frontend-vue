@@ -53,7 +53,6 @@ export default defineComponent({
         <router-link v-if="authorUsername" class="underline font-bold" :to="`/u/${authorUsername}`">
           {{ `${authorUsername ? authorUsername : "[deleted]"}` }}
         </router-link>
-        {{ `commented ${relativeTime("" + createdAt)}` }}
       </div>
       <div class="body prose prose-sm min-height-min">
         <Markdown v-if="content" :source="content" linkify html />

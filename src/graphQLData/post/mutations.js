@@ -10,9 +10,7 @@ export const CREATE_POST = gql`
         Poster {
           username
         }
-        endTime
         createdAt
-      
         Tags {
           text
         }
@@ -21,39 +19,22 @@ export const CREATE_POST = gql`
   }
   `;
 
-// Update post
 export const UPDATE_POST = gql`
-  mutation updatePost(
-    $id: ID!
-    $title: String
-    $Tags: [TagRef!]
-    $description: String
-    $editedDate: DateTime
-  ) {
-    updatePost(
-      input: {
-        filter: { id: [$id] }
-        set: {
-          Tags: $Tags
-          title: $title
-          description: $description
-          editedDate: $editedDate
-          cost: $cost
-        }
+mutation ($updatePostInput: PostUpdateInput, $eventWhere: PostWhere) {
+  updatePosts(update: $updatePostInput, where: $eventWhere) {
+    posts {
+      id
+      title
+      description
+      Poster {
+        username
       }
-    ) {
-      post {
-        id
-        title
-        description
-        Tags {
-          text
-        }
-        createdDate
-        editedDate
+      Tags {
+        text
       }
     }
   }
+}
 `;
 
 

@@ -17,7 +17,7 @@ export default defineComponent({
   <div
     class="
       sm:grid
-      sm:grid-cols-4
+      sm:grid-cols-12
       sm:gap-4
       sm:items-start
     "
@@ -49,7 +49,7 @@ export default defineComponent({
     >
       <slot name="icon" ></slot>
     </div>
-    <div class="sm:col-span-3">
+    <div class="sm:col-span-11">
        <slot name="content"></slot>
     </div>
   </div>

@@ -2,7 +2,6 @@
 import { defineComponent, PropType } from "vue";
 import { PostData } from "@/types/postTypes";
 import { getDatePieces } from "@/utils/dateTimeUtils";
-import { CommentSectionData } from "../../types/commentTypes";
 import Tag from "../buttons/Tag.vue";
 import HighlightedSearchTerms from "../forms/HighlightedSearchTerms.vue";
 import { DateTime } from "luxon";
@@ -42,13 +41,6 @@ export default defineComponent({
       type: String,
       default: "",
     },
-  },
-  methods: {
-    getCommentCount(commentSection: CommentSectionData) {
-      const count = commentSection.CommentsAggregate.count;
-      return ` ${count} comment${count === 1 ? "" : "s"}`;
-    },
-
   },
   data() {
     return {
@@ -92,18 +84,6 @@ export default defineComponent({
             />
           </p>
    
-        </div>
-        
-
-        <div class="text-sm">
-          <router-link
-            
-            :to="`/posts/p/${post.id}`"
-            class="font-medium text-gray-500"
-          >
-            {{ getCommentCount(post.CommentSections[0]) }}
-            <span aria-hidden="true">&rarr;</span>
-          </router-link>
         </div>
         <Tag
           :highlighted-tags="selectedTags"

@@ -16,23 +16,21 @@ export const router = createRouter({
       name: 'SearchPosts',
       path: "/posts",
       component: SearchPosts,
-      children: [
-        {
-          name: "PostDetail",
-          path: "p/:postId",
-          component: PostDetail,
-        },
-        {
-          name: "EditPost",
-          path: "p/:postId/edit",
-          component: EditPost,
-        },
-      ],
     },
     {
       path: "/posts/create",
       name: "CreatePost",
       component: CreatePost,
+    },
+    {
+      name: "PostDetail",
+      path: "/posts/p/:postId",
+      component: PostDetail,
+    },
+    {
+      name: "EditPost",
+      path: "/posts/p/:postId/edit",
+      component: EditPost,
     },
     { path: "/u/:username", component: UserProfile },
   ],

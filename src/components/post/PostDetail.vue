@@ -2,17 +2,12 @@
 import { defineComponent, computed, ref } from "vue";
 import Back from "../buttons/Back.vue";
 import Tag from "../buttons/Tag.vue";
-import { gql } from "@apollo/client/core";
 import { useQuery, useMutation } from "@vue/apollo-composable";
 import { useRoute, useRouter } from "vue-router";
 import { DELETE_POST } from "@/graphQLData/post/mutations";
-// import { TagData } from "@/types/tagTypes.d";
-import { PostData } from "@/types/postTypes";
-import {
-  relativeTime,
-  formatDuration,
-  getDurationObj,
-} from "../../dateTimeUtils";
+import { GET_POST } from "@/graphQLData/post/queries";
+import Markdown from "vue3-markdown-it";
+import { relativeTime } from "../../dateTimeUtils";
 import ConfirmDelete from "../ConfirmDelete.vue";
 import { DateTime } from "luxon";
 import ErrorBanner from "../forms/ErrorBanner.vue";
@@ -24,6 +19,7 @@ export default defineComponent({
     ConfirmDelete,
     ErrorBanner,
     GenericButton,
+    Markdown,
     Tag,
   },
   setup() {
@@ -33,55 +29,37 @@ export default defineComponent({
       return route.params.postId;
     });
 
-    const GET_POST = gql`
-      query getPost($eventId: ID!) {
-        posts(where: { id: $eventId }) {
-          id
-          title
-          createdAt
-          updatedAt
-          description
-         
-          Poster {
-            username
-          }
-         
-          Tags {
-            text
-          }
-        }
-      }
-    `;
-
     const {
-      result: postResult,
-      error: postError,
-      loading: postLoading,
+      result: getPostResult,
+      error: getPostError,
+      loading: getPostLoading,
     } = useQuery(GET_POST, { postId });
 
-    const postData = computed(() => {
-      if (
-        !postResult.value ||
-        !postResult.value.posts ||
-        !postResult.value.posts[0]
-      ) {
+    const post = computed(() => {
+      if (getPostError.value || getPostLoading.value) {
         return null;
       }
-      return postResult.value.posts[0];
+      return getPostResult.value.posts[0];
     });
 
-    // const isCreatorOfPost = () => {
-    //   const username = getUsername(user)
-    //   return username === organizerOfPost
-    // }
+    const editedAt = computed(() => {
+      if (getPostError.value || getPostLoading.value || !post.value.updatedAt) {
+        return "";
+      }
+      return `Edited ${relativeTime(post.value.updatedAt)}`;
+    });
 
-    const confirmDeleteIsOpen = ref(false);
+    const createdAt = computed(() => {
+      if (getPostError.value || getPostLoading.value) {
+        return "";
+      }
+      return `posted ${relativeTime(post.value.createdAt)}`;
+    });
 
     const {
       mutate: deletePost,
       error: deletePostError,
       onDone: onDoneDeleting,
-      // @ts-ignore
     } = useMutation(DELETE_POST, {
       variables: {
         id: postId.value,
@@ -102,46 +80,32 @@ export default defineComponent({
     });
 
     onDoneDeleting(() => {
-        router.push({
-          name: "SearchPosts",
-        });
-      })
+      router.push({
+        name: "SearchPosts",
+      });
+    });
+
+    const deleteModalIsOpen = ref(false);
 
     return {
-      confirmDeleteIsOpen,
-      postData,
-      postResult,
-      postError,
-      postLoading,
+      createdAt,
+      deleteModalIsOpen,
+      getPostResult,
+      getPostError,
+      getPostLoading,
       postId,
-      // commentSectionId,
       deletePost,
       deletePostError,
+      editedAt,
+      post,
       relativeTime,
     };
   },
   methods: {
-    getTimeZone(startTime: string) {
-      const startTimeObj = DateTime.fromISO(startTime);
-
-      return startTimeObj.zoneName;
-    },
     getFormattedDateString(startTime: string) {
       const startTimeObj = DateTime.fromISO(startTime);
 
       return startTimeObj.toFormat("cccc LLLL d yyyy");
-    },
-
-    getCalendarData(postData: PostData) {
-      const {
-        title,
-        description,
-      } = postData;
-
-      return {
-        name: title,
-        details: description,
-      };
     },
   },
 });
@@ -150,110 +114,74 @@ export default defineComponent({
 <template>
   <div class="px-10">
     <Back />
-    <p v-if="postLoading">Loading...</p>
-
-    <p v-else-if="postError">{{ `GET_POST error: ${postError.message}` }}</p>
-
-    <!-- <div v-if="!postData">
-      <p>Could not find the post.</p>
-      <router-link :to="`/posts`">
-        <p>
-          <i className="fas fa-arrow-left"></i> Go back to
-          {{ `/posts` }}
-        </p>
-      </router-link>
-    </div> -->
-
-    <div v-else-if="postResult && postResult.posts">
-      <ErrorBanner
-        class="mt-2"
-        v-if="deletePostError"
-        :text="deletePostError.message"
-      />
+    <p v-if="getPostLoading">Loading...</p>
+    <ErrorBanner
+      class="mt-2"
+      v-else-if="getPostError"
+      :text="getPostError.message"
+    />
+    <div v-else  class="
+        mx-auto
+        max-w-4xl
+        space-y-8
+        divide-y
+        bg-white
+        p-8
+        rounded
+      ">
       <div class="grid grid-cols-3 gap-4">
         <div class="col-start-1 col-span-2">
-          <h2 class="text-lg mb-2 text-gray-700">{{ postData.title }}</h2>
-          <p class="mb-4" v-if="postData.description">
-            {{ postData.description }}
-          </p>
+          <h2 class="text-lg mb-2 text-gray-700">
+            {{ post.title }}
+          </h2>
+          <div v-if="post.description" class="body prose prose-sm min-height-min">
+            <Markdown :source="post.description" linkify html />
+          </div>
           <Tag
-            v-for="tag in postData.Tags"
+            v-for="tag in post.Tags"
             :tag="tag.text"
             :key="tag.text"
             :postId="postId"
           />
-
-          
           <div className="text-xs text-gray-600 mt-4">
             <div className="organizer">
               <router-link
-                v-if="postData.Poster"
+                v-if="post.Poster"
                 class="text-blue-800 underline"
-                :to="`/u/${postData.Poster.username}`"
+                :to="`/u/${post.Poster.username}`"
               >
-                {{ postData.Poster.username }}
+                {{ post.Poster.username }}
               </router-link>
-              {{
-                `${
-                  postData.createdAt
-                    ? `posted ${relativeTime(
-                        "" + postData.createdAt
-                      )}`
-                    : ""
-                }`
-              }}
-              <span v-if="postData.updatedAt"> &#8226; </span>
-              {{
-                postData.updatedAt
-                  ? `Edited ${relativeTime("" + postData.updatedAt)}`
-                  : ""
-              }}
+              {{ createdAt }}
+              <span v-if="post.updatedAt"> &#8226; </span>
+              {{ editedAt }}
               &#8226;
               <span
                 class="underline font-medium text-gray-900 cursor-pointer"
-                @click="confirmDeleteIsOpen = true"
+                @click="deleteModalIsOpen = true"
                 >Delete</span
               >
-     
-            </div>
-            <div className="time-zone">
-              {{ `Time zone: ${getTimeZone(postData.startTime)}` }}
-            </div>
-            <div className="created-date">
-              {{
-                `${
-                  postData.createdAt
-                    ? `Created ${relativeTime(postData.createdAt)}`
-                    : ""
-                }`
-              }}
-              <span v-if="postData.updatedAt"> &#8226; </span>
-              {{
-                postData.updatedAt
-                  ? `${postData.updatedAt} Edited ${relativeTime(
-                      postData.updatedAt
-                    )}`
-                  : ""
-              }}
             </div>
             <span>
-            <router-link
-              :to="`/posts/p/${postId}/edit`"
-              ><GenericButton :text="'Edit'"
-            /></router-link>
-          </span>
+              <router-link :to="`/posts/p/${postId}/edit`"
+                ><GenericButton :text="'Edit'"
+              /></router-link>
+            </span>
           </div>
         </div>
-
-        <!-- <AddToCalendar :post="getCalendarData" /> -->
         <ConfirmDelete
           :title="'Delete Post'"
           :body="'Are you sure you want to delete this post?'"
-          :open="confirmDeleteIsOpen"
-          @close="confirmDeleteIsOpen = false"
+          :open="deleteModalIsOpen"
+          @close="deleteModalIsOpen = false"
           @delete="deletePost"
         />
       </div>
     </div>
+    <ErrorBanner
+      class="mt-2"
+      v-if="deletePostError"
+      :text="deletePostError.message"
+    />
   </div>
 </template>

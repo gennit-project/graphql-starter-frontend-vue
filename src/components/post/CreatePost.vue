@@ -8,7 +8,6 @@ import { PostData, CreatePostFormValues } from "@/types/postTypes";
 import CreateEditFormFields from "./CreateEditFormFields.vue";
 import { CREATE_POST } from "@/graphQLData/post/mutations";
 import { apolloClient } from "@/main";
-// import { CREATE_COMMENT_SECTION } from "@/graphQLData/comment/queries";
 
 export default defineComponent({
   name: "CreatePost",
@@ -59,12 +58,17 @@ export default defineComponent({
           connectOrCreate: tagConnections,
         },
         Poster: {
-          connect: {
-            where: {
+          connectOrCreate: {
+            onCreate: {
               node: {
                 username: formValues.value.poster,
               },
             },
+            where: {
+              node: {
+                username: formValues.value.poster,
+              }
+            }
           },
         },
       };
@@ -83,7 +87,8 @@ export default defineComponent({
           createPostInput: createPostInput.value,
         },
         update: (cache: any, result: any) => {
-          const newPost: PostData = result.data?.createPosts?.posts[0];
+          console.log('result after create post ', result)
+          const newPost: PostData = result.data.createPosts.posts[0]
 
           cache.modify({
             fields: {
@@ -114,9 +119,11 @@ export default defineComponent({
       };
     });
 
+
     onDone((response: any) => {
+      console.log('response in onDone ', response)
       const newPostId = response.data.createPosts.posts[0].id;
-      const router = useRouter();
+      
 
       router.push({
         name: "PostDetail",
@@ -134,24 +141,10 @@ export default defineComponent({
       createPost,
       createPostError,
       createPostInput,
+      formValues,
       router,
       tagOptionLabels,
-      formValues,
     };
-  },
-  data() {
-    return {
-      showCostField: false,
-    };
-  },
-  computed: {
-    changesRequired() {
-      console.log("Debug changes required", {
-        title: this.title,
-      });
-      const needsChanges = !(this.title.length > 0);
-      return needsChanges;
-    },
   },
   methods: {
     async submit() {
@@ -162,13 +155,15 @@ export default defineComponent({
         name: "SearchPosts",
       });
     },
-    updateFormValues(data: PostData) {
-      const existingValues = this.formValues.value;
-
-      this.formValues.value = {
+    updateFormValues(data: CreatePostFormValues) {
+      console.log("data ", data);
+      const existingValues = this.formValues;
+      console.log("existingValues ", existingValues);
+      this.formValues = {
         ...existingValues,
         ...data,
       };
+      console.log("newValues ", this.formValues);
     },
   },
 });

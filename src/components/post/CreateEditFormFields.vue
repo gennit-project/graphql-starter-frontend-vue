@@ -12,11 +12,10 @@ import TagPicker from "@/components/forms/TagPicker.vue";
 import PencilIcon from "@/components/icons/PencilIcon.vue";
 import ErrorBanner from "@/components/forms/ErrorBanner.vue";
 import TagIcon from "../icons/TagIcon.vue";
-import InfoIcon from "../icons/InfoIcon.vue";
 import { TagData } from "@/types/tagTypes";
 import { GET_TAGS } from "@/graphQLData/tag/queries";
 import { useQuery } from "@vue/apollo-composable";
-import { PostData, CreatePostFormValues } from "@/types/postTypes";
+import { CreateEditPostFormValues } from "@/types/postTypes";
 
 export default defineComponent({
   props: {
@@ -30,11 +29,17 @@ export default defineComponent({
       type: Boolean,
       required: true,
     },
-    postData: {
-      type: Object as PropType<PostData>,
+    getPostError: {
+      type: Object as PropType<ApolloError | null>,
+      default: () => {
+        return null;
+      },
+    },
+    formValues: {
+      type: Object as PropType<CreateEditPostFormValues>,
       required: false,
     },
-    postError: {
+    updatePostError: {
       type: Object as PropType<ApolloError | null>,
       default: () => {
         return null;
@@ -43,10 +48,6 @@ export default defineComponent({
     postLoading: {
       type: Boolean,
       default: false,
-    },
-    formValues: {
-      type: Object as PropType<CreatePostFormValues>,
-      required: true,
     },
   },
   setup() {
@@ -92,19 +93,13 @@ export default defineComponent({
     };
   },
   computed: {
-    initialSelectedTags() {
-      if (!this.formValues) {
-        return [];
-      }
-      return this.formValues.Tags.map((t: TagData) => t.text);
-    },
     needsChanges() {
       // We do these checks:
       // - Title is included
       // console.log("Debug changes required", {
       //   title: this.title,
       // });
-      const needsChanges = this.formValues.title.length > 0;
+      const needsChanges = this.formValues.title.length === 0;
       return needsChanges;
     },
     changesRequiredMessage() {
@@ -128,8 +123,8 @@ export default defineComponent({
 <template>
   <div>
     <div v-if="tagsLoading || postLoading">Loading...</div>
-    <div v-else-if="postError">
-      <div v-for="(error, i) of postError?.graphQLErrors" :key="i">
+    <div v-else-if="getPostError">
+      <div v-for="(error, i) of getPostError?.graphQLErrors" :key="i">
         {{ error.message }}
       </div>
     </div>
@@ -169,7 +164,9 @@ export default defineComponent({
                 <TagPicker
                   :tag-options="tagOptionLabels"
                   :initial-value="formValues.selectedTags"
-                  @setSelectedTags="$emit('updateFormValues', { selectedTags: $event })"
+                  @setSelectedTags="
+                    $emit('updateFormValues', { selectedTags: $event })
+                  "
                 />
               </template>
             </FormRow>
@@ -190,7 +187,7 @@ export default defineComponent({
       </div>
       <ErrorBanner v-if="needsChanges" :text="changesRequiredMessage" />
       <ErrorBanner v-if="createPostError" :text="createPostError.message" />
-
+      <ErrorBanner v-if="updatePostError" :text="updatePostError.message" />
       <div class="pt-5">
         <div class="flex justify-end">
           <CancelButton @click="$emit('cancel')" />
