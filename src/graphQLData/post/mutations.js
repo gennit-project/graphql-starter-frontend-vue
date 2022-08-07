@@ -20,7 +20,7 @@ export const CREATE_POST = gql`
   `;
 
 export const UPDATE_POST = gql`
-mutation ($updatePostInput: PostUpdateInput, $eventWhere: PostWhere) {
+mutation ($updatePostInput: PostUpdateInput, $postWhere: PostWhere) {
   updatePosts(update: $updatePostInput, where: $eventWhere) {
     posts {
       id

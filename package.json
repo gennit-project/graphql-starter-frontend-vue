@@ -21,6 +21,7 @@
     "@vitejs/plugin-vue": "^3.0.1",
     "@vue/apollo-composable": "^4.0.0-alpha.19",
     "@vue/apollo-option": "^4.0.0-alpha.20",
+    "@vue/apollo-util": "^4.0.0-alpha.18",
     "@vueform/multiselect": "^2.5.2",
     "apollo-boost": "^0.4.9",
     "autoprefixer": "^10.4.8",

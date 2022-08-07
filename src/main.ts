@@ -2,9 +2,11 @@ import { createApp, h, provide } from "vue";
 import App from "./App.vue";
 import { router } from "./router";
 import "./index.css"
-import { ApolloClient, InMemoryCache } from "@apollo/client/core";
+import { ApolloClient, InMemoryCache, ApolloLink, createHttpLink } from "@apollo/client/core";
 import { DefaultApolloClient } from "@vue/apollo-composable";
 import { createApolloProvider } from '@vue/apollo-option'
+import { onError } from '@apollo/client/link/error'
+import { logErrorMessages } from "@vue/apollo-util";
 import config from "./config";
 import 'v-tooltip/dist/v-tooltip.css';
 // import {
@@ -19,6 +21,27 @@ import 'v-tooltip/dist/v-tooltip.css';
 import VTooltipPlugin from 'v-tooltip'
 import '@github/markdown-toolbar-element'
 import 'highlight.js/styles/github-dark-dimmed.css'
+
+const httpLink = createHttpLink({
+  uri: config.graphqlUrl,
+})
+
+const networkErrorLink = onError(({ graphQLErrors, networkError }) => {
+  if (graphQLErrors)
+    graphQLErrors.map(({ message, locations, path }) =>
+      console.log(
+        `[GraphQL error]: Message: ${message}, Location: ${locations}, Path: ${path}`,
+      ),
+    )
+
+  if (networkError) console.log(`[Network error]: ${networkError}`)
+})
+
+const logErrorsLink = onError(error => {
+  if (process.env.NODE_ENV !== 'production') {
+    logErrorMessages(error)
+  }
+})
 
 // Cache implementation
 const cache = new InMemoryCache({
@@ -46,8 +69,8 @@ const cache = new InMemoryCache({
 
 // Create the apollo client
 export const apolloClient = new ApolloClient({
-  uri: config.graphqlUrl,
   cache,
+  link: logErrorsLink.concat(networkErrorLink).concat(httpLink)
 });
 
 const apolloProvider = createApolloProvider({

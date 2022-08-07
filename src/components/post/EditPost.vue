@@ -1,5 +1,5 @@
 <script lang="ts">
-import { defineComponent, ref, computed, watch } from "vue";
+import { defineComponent, ref, computed } from "vue";
 import { GET_POST } from "@/graphQLData/post/queries";
 import { UPDATE_POST } from "@/graphQLData/post/mutations";
 import {
@@ -67,14 +67,14 @@ export default defineComponent({
         };
       }
       // If the post data is loading, start with empty values. These
-      // will be overwritten by the watch function when the post
+      // will be overwritten by onGetPostResult function when the post
       // data is loaded.
       return {
         title: "",
         description: "",
         selectedTags: [],
       };
-    }
+    };
 
     const formValues = ref<CreateEditPostFormValues>(getDefaultFormValues());
 
@@ -168,8 +168,8 @@ export default defineComponent({
           },
         },
         update: (cache: any, result: any) => {
+          
           const newPost: PostData = result.data?.updatePosts?.posts[0];
-
           cache.modify({
             fields: {
               posts(existingPostRefs = [], fieldInfo: any) {
@@ -202,6 +202,7 @@ export default defineComponent({
 
     onDone((response: any) => {
       const newPostId = response.data.updatePosts.posts[0].id;
+      console.log("on done response ", response);
       router.push({
         name: "PostDetail",
         params: {
@@ -232,6 +233,9 @@ export default defineComponent({
       });
     },
     updateFormValues(data: CreateEditPostFormValues) {
+      // Update all form values at once because it makes cleaner
+      // code than passing each form individual value as a prop to
+      // CreateEditFormFields or writing separate methods to update each value.
       const existingValues = this.formValues;
       this.formValues = {
         ...existingValues,
