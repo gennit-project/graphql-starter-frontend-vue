@@ -6,12 +6,13 @@ import { useQuery, useMutation } from "@vue/apollo-composable";
 import { useRoute, useRouter } from "vue-router";
 import { DELETE_POST } from "@/graphQLData/post/mutations";
 import { GET_POST } from "@/graphQLData/post/queries";
-import Markdown from "vue3-markdown-it";
 import { relativeTime } from "../../dateTimeUtils";
 import ConfirmDelete from "../ConfirmDelete.vue";
 import { DateTime } from "luxon";
 import ErrorBanner from "../forms/ErrorBanner.vue";
 import GenericButton from "../buttons/GenericButton.vue";
+import MdEditor from 'md-editor-v3';
+import 'md-editor-v3/lib/style.css';
 
 export default defineComponent({
   components: {
@@ -19,7 +20,7 @@ export default defineComponent({
     ConfirmDelete,
     ErrorBanner,
     GenericButton,
-    Markdown,
+    MdEditor,
     Tag,
   },
   setup() {
@@ -134,8 +135,13 @@ export default defineComponent({
           <h2 class="text-lg mb-2 text-gray-700">
             {{ post.title }}
           </h2>
-          <div v-if="post.description" class="body prose min-height-min">
-            <Markdown :source="post.description" linkify html />
+          <div v-if="post.description" class="body min-height-min">
+            <md-editor
+              v-model="post.description"
+              language='en-US'
+              previewTheme='github'
+              preview-only
+            /> 
           </div>
           <Tag
             v-for="tag in post.Tags"
