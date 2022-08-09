@@ -4,7 +4,7 @@ import { gql } from "@apollo/client/core";
 import { useQuery } from "@vue/apollo-composable";
 import { GET_TAGS } from "@/graphQLData/tag/queries";
 import PostList from "./PostList.vue";
-import TagPicker from "@/components/forms/TagPicker.vue";
+import TagInput from "@/components/forms/TagInput.vue";
 import TagIcon from "../icons/TagIcon.vue";
 import ErrorBanner from "@/components/forms/ErrorBanner.vue";
 import CreateButton from "@/components/buttons/CreateButton.vue";
@@ -27,7 +27,7 @@ export default defineComponent({
     FilterChip,
     PostList,
     TagIcon,
-    TagPicker,
+    TagInput,
   },
   setup() {
     const selectedTags: Ref<Array<string>> = ref([]);
@@ -220,7 +220,7 @@ export default defineComponent({
               <TagIcon />
             </template>
             <template v-slot:content>
-              <TagPicker
+              <TagInput
                 :tag-options="tagOptionLabels"
                 :selected-tags="selectedTags"
                 @setSelectedTags="setSelectedTags"

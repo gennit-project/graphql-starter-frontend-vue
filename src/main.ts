@@ -8,7 +8,7 @@ import { createApolloProvider } from '@vue/apollo-option'
 import { onError } from '@apollo/client/link/error'
 import { logErrorMessages } from "@vue/apollo-util";
 import config from "./config";
-import 'v-tooltip/dist/v-tooltip.css';
+// import 'v-tooltip/dist/v-tooltip.css';
 // import {
 // Directives
 //   VTooltip
@@ -18,7 +18,9 @@ import 'v-tooltip/dist/v-tooltip.css';
   // Tooltip,
   // Menu
 // } from 'v-tooltip'
-import VTooltipPlugin from 'v-tooltip'
+// import VTooltipPlugin from 'v-tooltip'
+import FloatingVue from 'floating-vue'
+import 'floating-vue/dist/style.css'
 import '@github/markdown-toolbar-element'
 import 'highlight.js/styles/github-dark-dimmed.css'
 
@@ -87,6 +89,6 @@ const app = createApp({
 
 app
   .use(router)
-  .use(VTooltipPlugin)
+  .use(FloatingVue)
   .use(apolloProvider)
   .mount("#app");

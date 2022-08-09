@@ -10,11 +10,11 @@ export default defineComponent({
   setup(props) {
     return {
       showFormatted: ref(false),
-      text: ref(props.initialValue),
+      text: ref(props.selectedTags),
     };
   },
   props: {
-    initialValue: {
+    selectedTags: {
       type: String,
       default: "",
     },

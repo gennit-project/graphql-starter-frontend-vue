@@ -1,5 +1,5 @@
 <script lang="ts">
-import { defineComponent, PropType, computed } from "vue";
+import { defineComponent, PropType, } from "vue";
 import { ApolloError } from "@apollo/client/errors";
 import CancelButton from "@/components/buttons/CancelButton.vue";
 import SaveButton from "@/components/buttons/SaveButton.vue";
@@ -8,16 +8,26 @@ import FormTitle from "@/components/forms/FormTitle.vue";
 import FormRow from "@/components/forms/FormRow.vue";
 import Form from "@/components/forms/Form.vue";
 import TextInput from "@/components/forms/TextInput.vue";
-import TagPicker from "@/components/forms/TagPicker.vue";
+import TagInput from "@/components/forms/TagInput.vue";
 import PencilIcon from "@/components/icons/PencilIcon.vue";
 import ErrorBanner from "@/components/forms/ErrorBanner.vue";
 import TagIcon from "../icons/TagIcon.vue";
-import { TagData } from "@/types/tagTypes";
-import { GET_TAGS } from "@/graphQLData/tag/queries";
-import { useQuery } from "@vue/apollo-composable";
 import { CreateEditPostFormValues } from "@/types/postTypes";
 
 export default defineComponent({
+  components: {
+    CancelButton,
+    ErrorBanner,
+    TailwindForm: Form,
+    FormRow,
+    FormTitle,
+    PencilIcon,
+    SaveButton,
+    TagIcon,
+    TagInput,
+    TextEditor,
+    TextInput,
+  },
   props: {
     createPostError: {
       type: Object as PropType<ApolloError | null>,
@@ -51,42 +61,11 @@ export default defineComponent({
     },
   },
   setup() {
-    const {
-      loading: tagsLoading,
-      error: tagsError,
-      result: tagsResult,
-    } = useQuery(GET_TAGS);
-
-    // We allow the user to select from all existing tags.
-    const tagOptionLabels = computed(() => {
-      if (!tagsResult.value || !tagsResult.value.tags) {
-        return [];
-      }
-      return tagsResult.value.tags.map((tag: TagData) => tag.text);
-    });
-
     return {
-      tagsError,
-      tagsLoading,
-      tagOptionLabels,
-      tagsResult,
       touched: false,
     };
   },
 
-  components: {
-    CancelButton,
-    ErrorBanner,
-    TailwindForm: Form,
-    FormRow,
-    FormTitle,
-    PencilIcon,
-    SaveButton,
-    TagIcon,
-    TagPicker,
-    TextEditor,
-    TextInput,
-  },
   data(props) {
     return {
       formTitle: props.editMode ? "Edit Post" : "Create Post",
@@ -110,19 +89,12 @@ export default defineComponent({
       return "";
     },
   },
-  methods: {
-    setSelectedTags(tag: any) {
-      this.$emit("setSelectedTags", tag);
-      // console.log(post);
-      // this.tagInputValue = tag.join(", ");
-    },
-  },
 });
 </script>
 
 <template>
   <div>
-    <div v-if="tagsLoading || postLoading">Loading...</div>
+    <div v-if="postLoading">Loading...</div>
     <div v-else-if="getPostError">
       <div v-for="(error, i) of getPostError?.graphQLErrors" :key="i">
         {{ error.message }}
@@ -156,14 +128,8 @@ export default defineComponent({
               </template>
 
               <template v-slot:content>
-                <TextInput
-                  :full-width="true"
-                  :placeholder="'Add tag(s)'"
-                  :value="'placeholder for a new TagInput component'"
-                />
-                <TagPicker
-                  :tag-options="tagOptionLabels"
-                  :initial-value="formValues.selectedTags"
+                <TagInput
+                  :selected-tags="formValues?.selectedTags"
                   @setSelectedTags="
                     $emit('updateFormValues', { selectedTags: $event })
                   "
@@ -177,7 +143,7 @@ export default defineComponent({
               <template v-slot:content>
                 <TextEditor
                   class="mb-3"
-                  :initial-value="formValues.description || ''"
+                  :selected-tags="formValues.description || ''"
                   @update="$emit('updateFormValues', { description: $event })"
                 />
               </template>
@@ -190,7 +156,7 @@ export default defineComponent({
       <ErrorBanner v-if="updatePostError" :text="updatePostError.message" />
       <div class="pt-5">
         <div class="flex justify-end">
-          <CancelButton @click="$emit('cancel')" />
+          <CancelButton @click="$router.go(-1)" />
           <SaveButton
             @click.prevent="$emit('submit')"
             :disabled="needsChanges"

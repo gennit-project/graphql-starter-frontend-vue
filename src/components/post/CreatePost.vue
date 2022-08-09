@@ -4,7 +4,7 @@ import { useMutation, provideApolloClient } from "@vue/apollo-composable";
 import { useRouter } from "vue-router";
 import { gql } from "@apollo/client/core";
 import { TagData } from "@/types/tagTypes";
-import { PostData, CreatePostFormValues } from "@/types/postTypes";
+import { PostData, CreateEditPostFormValues } from "@/types/postTypes";
 import CreateEditFormFields from "./CreateEditFormFields.vue";
 import { CREATE_POST } from "@/graphQLData/post/mutations";
 import { apolloClient } from "@/main";
@@ -19,7 +19,7 @@ export default defineComponent({
     provideApolloClient(apolloClient);
     const router = useRouter();
 
-    const createPostDefaultValues: CreatePostFormValues = {
+    const createPostDefaultValues: CreateEditPostFormValues = {
       title: "",
       description: "",
       selectedTags: [],
@@ -146,12 +146,7 @@ export default defineComponent({
     async submit() {
       this.createPost();
     },
-    cancel() {
-      this.router.push({
-        name: "SearchPosts",
-      });
-    },
-    updateFormValues(data: CreatePostFormValues) {
+    updateFormValues(data: CreateEditPostFormValues) {
       const existingValues = this.formValues;
 
       this.formValues = {
@@ -167,7 +162,6 @@ export default defineComponent({
     :create-post-error="createPostError"
     :edit-mode="false"
     :form-values="formValues"
-    @cancel="cancel"
     @submit="submit"
     @updateFormValues="updateFormValues"
   />

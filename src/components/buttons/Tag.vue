@@ -1,24 +1,29 @@
 <script lang="ts">
-import { defineComponent, PropType, computed, ref } from "vue";
-
-
+import { defineComponent, PropType } from "vue";
+import XmarkIcon from "../icons/XmarkIcon.vue";
 export default defineComponent({
+  components: {
+    XmarkIcon
+  },
   props: {
+    active: {
+      type: Boolean,
+      default: false
+    },
+    clearable: {
+      type: Boolean,
+      default: false
+    },
+    index: {
+      type: Number,
+      default: 0
+    },
     tag: {
       type: String,
       required: true,
     },
-    selectedTags: {
-      type: Array as PropType<Array<String>>,
-      default: () => {
-        return [];
-      },
-    },
   },
   computed: {
-    active() {
-      return this.selectedTags.includes(this.tag)
-    },
     color() {
       if (this.active && !this.highlightedByMouse) {
         return 'active-tag'
@@ -50,22 +55,16 @@ export default defineComponent({
 </script>
 <template>
   <span
-    :class="color"
     @mouseenter="highlightedByMouse = true"
     @mouseleave="highlightedByMouse = false"
     @click="handleTagClick(tag, active)"
-    class="
-      rounded-full
-      px-2
-      py-1
-      mr-1
-      text-xs
-      font-medium
-      text-gray-900
-      cursor-pointer
-      tag
-    "
+    :class="[clearable ? 'pr-1': 'cursor-pointer mr-1 pr-3', color, 'rounded-full pl-3  py-1 text-sm font-medium text-gray-900 tag']"
     >{{ tag }}
+    <XmarkIcon
+      class="h-4 cursor-pointer"
+      v-if="clearable" 
+      @click="$emit('delete', index)"
+    />
   </span>
 </template>
 

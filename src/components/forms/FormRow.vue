@@ -20,6 +20,7 @@ export default defineComponent({
       sm:grid-cols-12
       sm:gap-4
       sm:items-start
+      mt-1
     "
   >
     <label

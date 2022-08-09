@@ -25,6 +25,7 @@
     "@vueform/multiselect": "^2.5.2",
     "apollo-boost": "^0.4.9",
     "autoprefixer": "^10.4.8",
+    "floating-vue": "^2.0.0-beta.19",
     "graphql": "^15.8.0",
     "graphql-tag": "^2.12.6",
     "highlight.js": "^11.6.0",

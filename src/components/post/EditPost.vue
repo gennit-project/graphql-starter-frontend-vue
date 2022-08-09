@@ -168,8 +168,8 @@ export default defineComponent({
           },
         },
         update: (cache: any, result: any) => {
-          
           const newPost: PostData = result.data?.updatePosts?.posts[0];
+          const updatedTags = newPost.Tags
           cache.modify({
             fields: {
               posts(existingPostRefs = [], fieldInfo: any) {
@@ -183,17 +183,45 @@ export default defineComponent({
                   `,
                 });
 
-                // Quick safety check - if the new post is already
+                // If the new post is already
                 // present in the cache, we don't need to add it again.
                 if (
                   existingPostRefs.some(
-                    (ref: any) => readField("id", ref) === newPostRef.id
+                    (ref: any) => readField("id", ref) === readField("id", newPostRef)
                   )
                 ) {
                   return existingPostRefs;
                 }
                 return [newPostRef, ...existingPostRefs];
               },
+              tags(existingTagRefs = [], fieldInfo: any) {
+                const readField = fieldInfo.readField;
+
+                const tagRefsOnPost = updatedTags.map((tagData: TagData) => {
+                  return cache.writeFragment({
+                    data: tagData,
+                    fragment: gql`
+                      fragment NewTag on Tags {
+                        text
+                      }
+                    `,
+                  });
+                })
+
+                let newTagRefs = []
+
+                for (let i = 0; i < tagRefsOnPost.length; i++) {
+                  const newTagRef = tagRefsOnPost[i];
+                  const alreadyExists = existingTagRefs.some(
+                    (ref: any) => readField("text", ref) === readField("text", newTagRef)
+                  )
+                  if (!alreadyExists) {
+                    newTagRefs.push(newTagRef)
+                  }
+                }
+
+                return [...newTagRefs, ...existingTagRefs];
+              }
             },
           });
         },
@@ -202,7 +230,6 @@ export default defineComponent({
 
     onDone((response: any) => {
       const newPostId = response.data.updatePosts.posts[0].id;
-      console.log("on done response ", response);
       router.push({
         name: "PostDetail",
         params: {
@@ -227,11 +254,6 @@ export default defineComponent({
     async submit() {
       this.updatePost();
     },
-    cancel() {
-      this.router.push({
-        name: "SearchPosts",
-      });
-    },
     updateFormValues(data: CreateEditPostFormValues) {
       // Update all form values at once because it makes cleaner
       // code than passing each form individual value as a prop to
@@ -253,7 +275,6 @@ export default defineComponent({
     :get-post-error="getPostError"
     :update-post-error="updatePostError"
     :form-values="formValues"
-    @cancel="cancel"
     @submit="submit"
     @updateFormValues="updateFormValues"
   />

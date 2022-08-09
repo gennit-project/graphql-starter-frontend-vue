@@ -1,12 +1,23 @@
 
 <script lang="ts">
-import { defineComponent, PropType } from "vue";
+import { defineComponent, PropType, computed } from "vue";
+import { TagData } from "@/types/tagTypes";
+import { GET_TAGS } from "@/graphQLData/tag/queries";
+import { useQuery } from "@vue/apollo-composable";
 import Tag from "@/components/buttons/Tag.vue";
 import RefreshIcon from "../icons/RefreshIcon.vue";
 
 export default defineComponent({
+  components: {
+    Tag,
+    RefreshIcon,
+  },
   props: {
-    initialValue: {
+    hideSelected: {
+      type: Boolean,
+      default: false
+    },
+    selectedTags: {
       type: Array as PropType<string[]>,
       default: () => {
         return [];
@@ -19,95 +30,105 @@ export default defineComponent({
       },
     },
   },
-  setup() {},
-  components: {
-    Tag,
-    RefreshIcon,
+  setup() {
+    const {
+      loading: tagsLoading,
+      error: tagsError,
+      result: tagsResult,
+    } = useQuery(GET_TAGS);
+
+    // We allow the user to select from all existing tags.
+    const tagOptionLabels = computed(() => {
+      if (!tagsResult.value || !tagsResult.value.tags) {
+        return [];
+      }
+      return tagsResult.value.tags.map((tag: TagData) => tag.text);
+    });
+
+    return {
+      tagsError,
+      tagsLoading,
+      tagOptionLabels,
+    };
   },
   data(props) {
-    const formattedTagOptions = props.tagOptions.map((tag) => {
-      return {
-        value: tag,
-        label: tag,
-      };
-    });
     return {
-      selectedTags: props.initialValue,
-      formattedTagOptions,
+      selected: props.selectedTags,
     };
+  },
+  computed: {
+     selectedTagsMap() {
+        let map = {}
+        for (let i = 0; i < this.selectedTags.length; i++) {
+            const tag = this.selectedTags[i]
+            map[tag] = true
+        }
+        return map
+     }
   },
   methods: {
     resetTags() {
-      this.selectedTags = [];
-      this.$emit("setSelectedTags", this.selectedTags);
+      this.selected = [];
+      this.$emit("setSelectedTags", []);
     },
     select(tag: string) {
-      this.selectedTags.push(tag);
-      this.$emit("setSelectedTags", this.selectedTags);
+      this.selected.push(tag);
+      this.$emit("setSelectedTags", this.selected);
     },
     deselect(tagToDeselect: string) {
-      this.selectedTags = this.selectedTags.filter((tag: string) => {
+      this.selected = this.selected.filter((tag: string) => {
         return tag !== tagToDeselect;
       });
-      this.$emit("setSelectedTags", this.selectedTags);
+      this.$emit("setSelectedTags", this.selected);
     },
   },
 });
 </script>
 <template>
-  <!-- <Multiselect
-    v-model="selectedTags"
-    class="wide"
-    :classes="{
-      containerActive: 'ring-0',
-      tagsSearch:
-        'absolute inset-0 border-0 outline-none focus:ring-0 appearance-none p-0 text-base font-sans box-border w-full',
-    }"
-    mode="tags"
-    @select="$emit('setSelectedTags', selectedTags)"
-    @deselect="$emit('setSelectedTags', selectedTags)"
-    @clear="$emit('setSelectedTags', selectedTags)"
-    :placeholder="'Enter tags here'"
-    :closeOnSelect="false"
-    :searchable="true"
-    :options="formattedTagOptions"
-  /> -->
-  <div class="divide-y divide-solid">
-    <div class="tagpicker">
-      <Tag
-        :selectedTags="selectedTags"
-        :key="tag"
-        v-for="tag in tagOptions"
-        :tag="tag"
-        @select="select"
-        @deselect="deselect"
-      />
+  <div>
+    <div v-if="tagsLoading">Loading...</div>
+    <div v-else-if="tagsError">
+      <div v-for="(error, i) of tagsError?.graphQLErrors" :key="i">
+        {{ error.message }}
+      </div>
     </div>
-    <div class="h-12">
-      <button
-        class="
-          mt-2
-          float-right
-          inline-flex
-          bg-white
-          py-2
-          px-4
-          border border-gray-300
-          rounded-md
-          shadow-sm
-          text-sm
-          font-medium
-          text-gray-700
-          hover:bg-gray-50
-          focus:outline-none
-          focus:ring-2
-          focus:ring-offset-2
-          focus:ring-blue-500
-        "
-        @click.prevent="resetTags"
-      >
-        <RefreshIcon class="mr-2 h-5" />Reset
-      </button>
+    <div v-else class="divide-y divide-solid">
+      <div class="tagpicker">
+        <Tag
+          :key="tag"
+          v-for="tag in tagOptionLabels"
+          :active="!!selectedTagsMap[tag]"
+          :tag="tag"
+          @select="select"
+          @deselect="deselect"
+        />
+      </div>
+      <div class="h-12">
+        <button
+          class="
+            mt-2
+            float-right
+            inline-flex
+            bg-white
+            py-2
+            px-4
+            border border-gray-300
+            rounded-md
+            shadow-sm
+            text-sm
+            font-medium
+            text-gray-700
+            hover:bg-gray-50
+            focus:outline-none
+            focus:ring-2
+            focus:ring-offset-2
+            focus:ring-blue-500
+          "
+          @click.prevent="resetTags"
+        >
+          <RefreshIcon class="mr-2 h-5" @click="resetTags"/>Reset
+        </button>
+      </div>
     </div>
   </div>
 </template>
