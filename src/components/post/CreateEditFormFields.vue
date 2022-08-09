@@ -12,6 +12,7 @@ import TagInput from "@/components/forms/TagInput.vue";
 import PencilIcon from "@/components/icons/PencilIcon.vue";
 import ErrorBanner from "@/components/forms/ErrorBanner.vue";
 import TagIcon from "../icons/TagIcon.vue";
+import AnnotationIcon from "../icons/AnnotationIcon.vue";
 import { CreateEditPostFormValues } from "@/types/postTypes";
 
 export default defineComponent({
@@ -27,7 +28,8 @@ export default defineComponent({
     TagInput,
     TextEditor,
     TextInput,
-  },
+    AnnotationIcon
+},
   props: {
     createPostError: {
       type: Object as PropType<ApolloError | null>,
@@ -139,7 +141,7 @@ export default defineComponent({
             </FormRow>
             <FormRow>
               <template v-slot:icon>
-                <i class="fa-solid fa-list float-right"></i>
+                <AnnotationIcon class="float-right"/>
               </template>
               <template v-slot:content>
                 <TextEditor
