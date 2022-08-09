@@ -3,9 +3,11 @@
 import { defineComponent, PropType } from "vue";
 import Tag from "../buttons/Tag.vue";
 import TagPicker from "@/components/forms/TagPicker.vue";
+import FloatingDropdown from "./FloatingDropdown.vue";
 
 export default defineComponent({
   components: {
+    FloatingDropdown,
     Tag,
     TagPicker,
   },
@@ -53,52 +55,47 @@ export default defineComponent({
 </script>
 
 <template>
-  <div>
-    <div
-      class="
-        tag-container
-        mt-1
-        pt-0.5
-        pb-0.5
-        flex
-        relative
-        rounded-md
-        shadow-sm
-        border border-gray-300
-      "
-    >
-      <Tag
-        v-for="(tag, i) of tags"
-        :key="tag"
-        :active="true"
-        :clearable="true"
-        :tag="tag"
-        :index="i"
-        @delete="deleteTag($event)"
-      />
-      <input
+  <FloatingDropdown>
+    <template v-slot:button>
+      <div
         class="
-          flex-1
-          block
-          min-w-0
-          pl-3
-          pt-2
-          pb-2
-          rounded
-          sm:text-sm
+          tag-container
+          mt-1
+          pt-0.5
+          pb-0.5
+          flex
+          relative
+          rounded-md
+          shadow-sm
+          border border-gray-300
         "
-        v-model="currentInput"
-        placeholder="Add tags"
-        @keypress.enter="saveTag"
-        @keydown.delete="backspaceDelete"
+      >
+        <Tag
+          v-for="(tag, i) of tags"
+          :key="tag"
+          :active="true"
+          :clearable="true"
+          :tag="tag"
+          :index="i"
+          @delete="deleteTag($event)"
+        />
+        <input
+          class="flex-1 block min-w-0 pl-3 pt-2 pb-2 rounded sm:text-sm"
+          v-model="currentInput"
+          placeholder="Add tags"
+          @keypress.enter="saveTag"
+          @keydown.delete="backspaceDelete"
+        />
+      </div>
+    </template>
+    <template v-slot:content>
+      <TagPicker
+        :selected-tags="selectedTags"
+        :hide-selected="true"
+        @setSelectedTags="setSelectedTags"
       />
-    </div>
-    <TagPicker
-      :selected-tags="selectedTags"
-      :hide-selected="true"
-      @setSelectedTags="setSelectedTags"
-    />
-  </div>
+    </template>
+  </FloatingDropdown>
 </template>
 
 <style lang="scss" scoped>
