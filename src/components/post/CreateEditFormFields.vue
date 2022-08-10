@@ -102,83 +102,88 @@ export default defineComponent({
         {{ error.message }}
       </div>
     </div>
-    
+
     <TailwindForm
       v-else-if="!editMode || (editMode && formValues)"
       @input="touched = true"
     >
-      <div class="divide-y divide-gray-200 sm:space-y-5">
-          <div>
-            <FormRow>
-              <template v-slot:content>
-                <div class="flow-root">
-                  <FormTitle class="float-left"> {{ formTitle }} </FormTitle>
-                  <div class="float-right">
-                    <CancelButton  @click="$router.go(-1)" />
-                    <SaveButton
-                      @click.prevent="$emit('submit')"
-                      :disabled="needsChanges"
-                    />
-                  </div>
+      <div class="divide-y divide-gray-200 sm:space-y-5 pr-8">
+        <div>
+          <FormRow>
+            <template v-slot:content>
+              <div class="flow-root">
+                <FormTitle class="float-left"> {{ formTitle }} </FormTitle>
+                <div class="float-right">
+                  <CancelButton @click="$router.go(-1)" />
+                  <SaveButton
+                    @click.prevent="$emit('submit')"
+                    :disabled="needsChanges"
+                  />
                 </div>
-              </template>
-            </FormRow>
+              </div>
+            </template>
+          </FormRow>
 
-            <FormRow>
-              <template v-slot:icon>
-                <PencilIcon class="float-right" />
-              </template>
-              <template v-slot:content>
-                <TextInput
-                  :value="formValues.title"
-                  :full-width="true"
-                  :placeholder="'Add title'"
-                  @update="$emit('updateFormValues', { title: $event })"
-                />
-              </template>
-            </FormRow>
+          <FormRow>
+            <template v-slot:icon>
+              <PencilIcon class="float-right" />
+            </template>
+            <template v-slot:content>
+              <TextInput
+                :value="formValues.title"
+                :full-width="true"
+                :placeholder="'Add title'"
+                @update="$emit('updateFormValues', { title: $event })"
+              />
+            </template>
+          </FormRow>
 
-            <FormRow>
-              <template v-slot:icon>
-                <TagIcon class="float-right" />
-              </template>
+          <FormRow>
+            <template v-slot:icon>
+              <TagIcon class="float-right" />
+            </template>
 
-              <template v-slot:content>
-                <TagInput
-                  :selected-tags="formValues?.selectedTags"
-                  @setSelectedTags="
-                    $emit('updateFormValues', { selectedTags: $event })
-                  "
-                />
-              </template>
-            </FormRow>
+            <template v-slot:content>
+              <TagInput
+                :selected-tags="formValues?.selectedTags"
+                @setSelectedTags="
+                  $emit('updateFormValues', { selectedTags: $event })
+                "
+              />
+            </template>
+          </FormRow>
 
-            <FormRow>
-              <template v-slot:icon>
-                <AnnotationIcon class="float-right"/>
-              </template>
-              <template v-slot:content>
-                <TextEditor
-                  class="mb-3"
-                  :selected-tags="formValues.description || ''"
-                  @update="$emit('updateFormValues', { description: $event })"
-                />
-              </template>
-            </FormRow>
-          </div>
+          <FormRow>
+            <template v-slot:icon>
+              <AnnotationIcon class="float-right" />
+            </template>
+            <template v-slot:content>
+              <TextEditor
+                class="mb-3"
+                :selected-tags="formValues.description || ''"
+                @update="$emit('updateFormValues', { description: $event })"
+              />
+            </template>
+          </FormRow>
+
+          <FormRow>
+            <template v-slot:content>
+              <div class="pt-5">
+                <div class="flex justify-end">
+                  <CancelButton @click="$router.go(-1)" />
+                  <SaveButton
+                    @click.prevent="$emit('submit')"
+                    :disabled="needsChanges"
+                  />
+                </div>
+              </div>
+            </template>
+          </FormRow>
+        </div>
       </div>
       <ErrorBanner v-if="needsChanges" :text="changesRequiredMessage" />
       <ErrorBanner v-if="createPostError" :text="createPostError.message" />
       <ErrorBanner v-if="updatePostError" :text="updatePostError.message" />
-      <div class="pt-5">
-        <div class="flex justify-end">
-          <CancelButton @click="$router.go(-1)" />
-          <SaveButton
-            @click.prevent="$emit('submit')"
-            :disabled="needsChanges"
-          />
-        </div>
-      </div>
     </TailwindForm>
   </div>
 </template>
