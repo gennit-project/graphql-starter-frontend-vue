@@ -123,7 +123,6 @@ export default defineComponent({
     />
     <div v-else  class="
         mx-auto
-        max-w-4xl
         space-y-8
         divide-y
         bg-white

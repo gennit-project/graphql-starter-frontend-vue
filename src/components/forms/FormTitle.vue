@@ -6,7 +6,7 @@ export default defineComponent({
 })
 </script>
 <template>
-  <h1 class="text-lg leading-6 font-medium text-gray-900">
+  <h1 class="pt-2 text-xl font-medium text-gray-900">
     <slot />
   </h1>
 </template>

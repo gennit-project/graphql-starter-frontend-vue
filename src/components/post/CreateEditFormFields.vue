@@ -1,5 +1,5 @@
 <script lang="ts">
-import { defineComponent, PropType, } from "vue";
+import { defineComponent, PropType } from "vue";
 import { ApolloError } from "@apollo/client/errors";
 import CancelButton from "@/components/buttons/CancelButton.vue";
 import SaveButton from "@/components/buttons/SaveButton.vue";
@@ -28,8 +28,8 @@ export default defineComponent({
     TagInput,
     TextEditor,
     TextInput,
-    AnnotationIcon
-},
+    AnnotationIcon,
+  },
   props: {
     createPostError: {
       type: Object as PropType<ApolloError | null>,
@@ -108,9 +108,22 @@ export default defineComponent({
       @input="touched = true"
     >
       <div class="divide-y divide-gray-200 sm:space-y-5">
-        <div>
-          <FormTitle> {{ formTitle }} </FormTitle>
           <div>
+            <FormRow>
+              <template v-slot:content>
+                <div class="flow-root">
+                  <FormTitle class="float-left"> {{ formTitle }} </FormTitle>
+                  <div class="float-right">
+                    <CancelButton  @click="$router.go(-1)" />
+                    <SaveButton
+                      @click.prevent="$emit('submit')"
+                      :disabled="needsChanges"
+                    />
+                  </div>
+                </div>
+              </template>
+            </FormRow>
+
             <FormRow>
               <template v-slot:icon>
                 <PencilIcon class="float-right" />
@@ -139,6 +152,7 @@ export default defineComponent({
                 />
               </template>
             </FormRow>
+
             <FormRow>
               <template v-slot:icon>
                 <AnnotationIcon class="float-right"/>
@@ -152,7 +166,6 @@ export default defineComponent({
               </template>
             </FormRow>
           </div>
-        </div>
       </div>
       <ErrorBanner v-if="needsChanges" :text="changesRequiredMessage" />
       <ErrorBanner v-if="createPostError" :text="createPostError.message" />

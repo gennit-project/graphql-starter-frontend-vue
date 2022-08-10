@@ -10,7 +10,6 @@ export default defineComponent({
     <form
       class="
         mx-auto
-        max-w-4xl
         space-y-8
         divide-y
         bg-white
