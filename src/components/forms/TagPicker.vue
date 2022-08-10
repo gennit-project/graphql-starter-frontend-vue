@@ -136,13 +136,11 @@ export default defineComponent({
 <style lang="scss">
 </style>
 <style>
-.wide {
-  min-width: 250px;
-}
+
 .tagpicker {
-  max-width: 400px;
   display: flex;
   flex-wrap: wrap;
   padding: 10px;
+  max-width: 600px;
 }
 </style>
