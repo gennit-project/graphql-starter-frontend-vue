@@ -17,19 +17,20 @@ export default defineComponent({
     },
   },
   methods: {
-    removeQuotationMarks(input: String) {
-      // Prevent errors when quotation marks are added
-      // to GraphQL query
-      return input
-        .split("'")
-        .join("")
-        .split('"')
-        .join("");
-    },
+    // removeQuotationMarks(input: String) {
+    //   // Prevent errors when quotation marks are added
+    //   // to GraphQL query
+    //   return input
+    //     .split("'")
+    //     .join("")
+    //     .split('"')
+    //     .join("");
+    // },
     updateSearchInput(e: any) {
+      console.log('event ', e.target.value)
       this.$emit(
-        "updateSearchInput",
-        this.removeQuotationMarks(e.target.value)
+        "updateSearchInput", e.target.value
+        // this.removeQuotationMarks(e.target.value)
       );
     },
   },
@@ -47,7 +48,7 @@ export default defineComponent({
           pl-3
           flex
           items-center
-          pointer-posts-none
+          pointer-events-none
         "
       >
         <!-- Heroicon name: solid/search -->
@@ -86,7 +87,7 @@ export default defineComponent({
           text-xs
         "
         :placeholder="searchPlaceholder"
-        @keyup="updateSearchInput"
+        @keyup="updateSearchInput($event)"
         type="text"
       />
     </div>

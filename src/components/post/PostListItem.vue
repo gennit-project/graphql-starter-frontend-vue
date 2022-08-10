@@ -1,5 +1,5 @@
 <script lang="ts">
-import { defineComponent, PropType } from "vue";
+import { defineComponent, PropType, computed } from "vue";
 import { PostData } from "@/types/postTypes";
 import { getDatePieces } from "@/utils/dateTimeUtils";
 import Tag from "../buttons/Tag.vue";
@@ -21,8 +21,18 @@ export default defineComponent({
       year !== currentYear ? ", " + year : ""
     }`;
 
+    const selectedTagMap = computed(() => {
+      let map = {}
+      for (let i = 0; i < props.selectedTags.length; i++) {
+        const selectedTag = props.selectedTags[i]
+        map[selectedTag] = true
+      }
+      return map
+    })
+
     return {
       formattedDate,
+      selectedTagMap,
       timeOfDay,
     };
   },
@@ -42,15 +52,11 @@ export default defineComponent({
       default: "",
     },
   },
-  data() {
-    return {
-     
-    };
-  },
   components: {
     Tag,
     HighlightedSearchTerms,
   },
+
 });
 </script>
 
@@ -83,10 +89,9 @@ export default defineComponent({
               :search-input="searchInput"
             />
           </p>
-   
         </div>
         <Tag
-          :highlighted-tags="selectedTags"
+          :active="!!selectedTagMap[tag.text]"
           :key="tag"
           v-for="tag in post.Tags"
           :tag="tag.text"

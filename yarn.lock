@@ -169,7 +169,7 @@
   dependencies:
     esbuild "^0.14.14"
 
-"@popperjs/core@^2.11.0", "@popperjs/core@^2.11.5":
+"@popperjs/core@^2.11.5":
   version "2.11.5"
   resolved "https://registry.yarnpkg.com/@popperjs/core/-/core-2.11.5.tgz#db5a11bf66bdab39569719555b0f76e138d7bd64"
   integrity sha512-9X2obfABZuDVLCgPK9aX0a/x4jaOEweTTWE2+9sr0Qqqevj2Uv5XorvusThmc9XGYpS9yI+fhh8RTafBtGposw==
@@ -2473,14 +2473,6 @@ v-calendar@3.0.0-alpha.6:
     date-fns "^2.16.1"
     date-fns-tz "^1.0.12"
     lodash "^4.17.20"
-
-v-tooltip@^4.0.0-beta.2:
-  version "4.0.0-beta.17"
-  resolved "https://registry.yarnpkg.com/v-tooltip/-/v-tooltip-4.0.0-beta.17.tgz#914ab8fe801c2c45f1328f1260b770ec2049da64"
-  integrity sha512-d7v/6KEXQOtcj3NT3Z1LpbDv8SBh8JgbsD+3s/zGIGCxiXC2SoVW6wGV4X0MlCo97PiosibcSe+VKbFiy4AKnQ==
-  dependencies:
-    "@popperjs/core" "^2.11.0"
-    vue-resize "^2.0.0-alpha.1"
 
 v8-compile-cache@^2.0.3:
   version "2.3.0"

@@ -32,7 +32,6 @@
     "luxon": "^3.0.1",
     "md-editor-v3": "^2.2.1",
     "v-calendar": "3.0.0-alpha.6",
-    "v-tooltip": "^4.0.0-beta.2",
     "vue": "^3.2.37",
     "vue-apollo": "3.1.0",
     "vue-class-component": "^8.0.0-0",

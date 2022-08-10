@@ -5,10 +5,9 @@ import { useQuery } from "@vue/apollo-composable";
 import { GET_TAGS } from "@/graphQLData/tag/queries";
 import PostList from "./PostList.vue";
 import TagInput from "@/components/forms/TagInput.vue";
-import TagIcon from "../icons/TagIcon.vue";
 import ErrorBanner from "@/components/forms/ErrorBanner.vue";
 import CreateButton from "@/components/buttons/CreateButton.vue";
-import FilterChip from "../forms/FilterChip.vue";
+import SearchBar from "../forms/SearchBar.vue";
 
 import { getTagLabel } from "@/components/forms/utils";
 import { router } from "@/router";
@@ -24,14 +23,14 @@ export default defineComponent({
   components: {
     CreateButton,
     ErrorBanner,
-    FilterChip,
     PostList,
-    TagIcon,
+    SearchBar,
     TagInput,
   },
   setup() {
     const selectedTags: Ref<Array<string>> = ref([]);
     const searchInput: Ref<string> = ref("");
+
     let textFilter = computed(() => {
       if (!searchInput.value) {
         return "";
@@ -118,7 +117,7 @@ export default defineComponent({
 
     // Turn the query string into an actual GraphQL
     // query. Any GraphQL syntax errors will be thrown here.
-    let postQuery = computed(() => {
+    let GET_POSTS = computed(() => {
       try {
         return gql`
           ${postQueryString.value}
@@ -134,7 +133,7 @@ export default defineComponent({
       loading: postLoading,
       refetch: refetchPosts,
       fetchMore,
-    } = useQuery(postQuery, { first: 20, offset: 0 });
+    } = useQuery(GET_POSTS, { first: 20, offset: 0 });
 
     const reachedEndOfResults = ref(false);
 
@@ -182,13 +181,13 @@ export default defineComponent({
       placeData: null,
       postError,
       postLoading,
-      postQuery,
       postQueryString,
       postResult,
       postFilterString,
       reachedEndOfResults,
       refetchPosts,
       router,
+      searchInput,
       selectedTags,
       setSelectedTags,
       tagLabel,
@@ -197,7 +196,8 @@ export default defineComponent({
   },
   methods: {
     updateSearchResult(input: string) {
-      this.setSearchInput(input);
+      console.log('update search result ran ', input)
+      this.searchInput = input
     },
     filterByTag(tag: string) {
       this.setSelectedTags([tag]);
@@ -207,34 +207,33 @@ export default defineComponent({
 </script>
 <template>
   <div class="container">
-    <div v-if="postLoading">Loading...</div>
-    <ErrorBanner class="mt-2" v-else-if="postError" :text="postError.message" />
-    <div v-else >
+    <div>
       <div class="inline-flex space-x-2">
-        <div class="items-center align-middle mt-1">
-          <FilterChip
-            :label="tagLabel"
-            :highlighted="tagLabel !== defaultFilterLabels.tags"
-          >
-            <template v-slot:icon>
-              <TagIcon />
-            </template>
-            <template v-slot:content>
-              <TagInput
-                :tag-options="tagOptionLabels"
-                :selected-tags="selectedTags"
-                @setSelectedTags="setSelectedTags"
-              />
-            </template>
-          </FilterChip>
-        </div>
-        <div class="items-center align-middle mt-1">
+        <div class="items-center inline-flex mt-2 space-x-2">
+          <SearchBar
+            :search-placeholder="'Search posts'"
+            @updateSearchInput="updateSearchResult"
+          />
+          <TagInput
+            class="wide"
+            :tag-options="tagOptionLabels"
+            :selected-tags="selectedTags"
+            @setSelectedTags="setSelectedTags"
+          />
           <CreateButton :to="createPostPath" :label="'Create Post'" />
         </div>
       </div>
+      <div v-if="postLoading">Loading...</div>
+      <ErrorBanner
+        class="mt-2"
+        v-else-if="postError"
+        :text="postError.message"
+      />
       <PostList
+        v-else
         id="listView"
         class="relative text-lg"
+        :search-input="searchInput"
         :posts="postResult.posts"
         :selected-tags="selectedTags"
         @filterByTag="filterByTag"
@@ -251,5 +250,8 @@ export default defineComponent({
 <style>
 .gray {
   color: gray;
+}
+.wide {
+  min-width: 30vw;
 }
 </style>

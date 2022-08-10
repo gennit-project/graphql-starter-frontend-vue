@@ -1,5 +1,5 @@
 <script lang="ts">
-import { defineComponent, PropType } from "vue";
+import { defineComponent } from "vue";
 import XmarkIcon from "../icons/XmarkIcon.vue";
 export default defineComponent({
   components: {

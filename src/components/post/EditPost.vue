@@ -242,7 +242,6 @@ export default defineComponent({
       getPostError,
       getPostLoading,
       formValues,
-      post,
       router,
       updatePost,
       updatePostError,
@@ -270,7 +269,6 @@ export default defineComponent({
 <template>
   <CreateEditFormFields
     :edit-mode="true"
-    :post-data="post"
     :post-loading="getPostLoading"
     :get-post-error="getPostError"
     :update-post-error="updatePostError"

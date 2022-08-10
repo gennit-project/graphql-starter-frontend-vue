@@ -60,8 +60,8 @@ export default defineComponent({
     <ul role="list" class="divide-y divide-gray-200">
       <PostListItem
         :ref="`#${post.id}`"
-        v-for="post in posts"
-        :key="post.id"
+        v-for="post, i in posts"
+        :key="i"
         :post="post"
         :selected-tags="selectedTags"
         :search-input="searchInput"
