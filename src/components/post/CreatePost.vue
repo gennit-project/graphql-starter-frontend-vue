@@ -3,16 +3,15 @@ import { defineComponent, ref, computed } from "vue";
 import { useMutation, provideApolloClient } from "@vue/apollo-composable";
 import { useRouter } from "vue-router";
 import { gql } from "@apollo/client/core";
-import { TagData } from "@/types/tagTypes";
 import { PostData, CreateEditPostFormValues } from "@/types/postTypes";
-import CreateEditFormFields from "./CreateEditFormFields.vue";
+import CreateEditPostFields from "./CreateEditPostFields.vue";
 import { CREATE_POST } from "@/graphQLData/post/mutations";
 import { apolloClient } from "@/main";
 
 export default defineComponent({
   name: "CreatePost",
   components: {
-    CreateEditFormFields,
+    CreateEditPostFields,
   },
   apollo: {},
   setup() {
@@ -129,17 +128,12 @@ export default defineComponent({
       });
     });
 
-    const tagOptionLabels = computed(() => {
-      return formValues.value.selectedTags.map((tag: TagData) => tag.text);
-    });
-
     return {
       createPost,
       createPostError,
       createPostInput,
       formValues,
       router,
-      tagOptionLabels,
     };
   },
   methods: {
@@ -158,7 +152,7 @@ export default defineComponent({
 });
 </script>
 <template>
-  <CreateEditFormFields
+  <CreateEditPostFields
     :create-post-error="createPostError"
     :edit-mode="false"
     :form-values="formValues"

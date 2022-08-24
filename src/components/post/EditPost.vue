@@ -11,14 +11,13 @@ import { gql } from "@apollo/client/core";
 import { useRoute, useRouter } from "vue-router";
 import { TagData } from "@/types/tagTypes";
 import { apolloClient } from "@/main";
-
 import { PostData, CreateEditPostFormValues } from "@/types/postTypes";
-import CreateEditFormFields from "./CreateEditFormFields.vue";
+import CreateEditPostFields from "./CreateEditPostFields.vue";
 
 export default defineComponent({
   name: "EditPost",
   components: {
-    CreateEditFormFields,
+    CreateEditPostFields,
   },
   apollo: {},
   setup() {
@@ -172,28 +171,6 @@ export default defineComponent({
           const updatedTags = newPost.Tags
           cache.modify({
             fields: {
-              posts(existingPostRefs = [], fieldInfo: any) {
-                const readField = fieldInfo.readField;
-                const newPostRef = cache.writeFragment({
-                  data: newPost,
-                  fragment: gql`
-                    fragment NewPost on Posts {
-                      id
-                    }
-                  `,
-                });
-
-                // If the new post is already
-                // present in the cache, we don't need to add it again.
-                if (
-                  existingPostRefs.some(
-                    (ref: any) => readField("id", ref) === readField("id", newPostRef)
-                  )
-                ) {
-                  return existingPostRefs;
-                }
-                return [newPostRef, ...existingPostRefs];
-              },
               tags(existingTagRefs = [], fieldInfo: any) {
                 const readField = fieldInfo.readField;
 
@@ -256,7 +233,7 @@ export default defineComponent({
     updateFormValues(data: CreateEditPostFormValues) {
       // Update all form values at once because it makes cleaner
       // code than passing each form individual value as a prop to
-      // CreateEditFormFields or writing separate methods to update each value.
+      // CreateEditPostFields or writing separate methods to update each value.
       const existingValues = this.formValues;
       this.formValues = {
         ...existingValues,
@@ -267,7 +244,7 @@ export default defineComponent({
 });
 </script>
 <template>
-  <CreateEditFormFields
+  <CreateEditPostFields
     :edit-mode="true"
     :post-loading="getPostLoading"
     :get-post-error="getPostError"
