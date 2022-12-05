@@ -31,55 +31,22 @@ export default defineComponent({
     const selectedTags: Ref<Array<string>> = ref([]);
     const searchInput: Ref<string> = ref("");
 
-    let textFilter = computed(() => {
-      if (!searchInput.value) {
-        return "";
-      }
-
-      // Match a case-insensitive regex for the search term
-      return `,
-      { 
+    const postWhere = computed(() => {
+      return {
+        Tags: {
+          OR: selectedTags.value.map((tag: string) => {
+            return { text: tag };
+          }),
+        },
         OR: [
-			    {
-		        title_MATCHES: "(?i).*${searchInput.value}.*"
-			    },{
-			    	description_MATCHES: "(?i).*${searchInput.value}.*"
-			    }
-		    ]
-      },
-      `;
-    });
-    let tagFilter = computed(() => {
-      if (selectedTags.value.length > 0) {
-        let matchTags = selectedTags.value.reduce((prev, curr) => {
-          return prev + `{ text_MATCHES: "(?i)${curr}" },`;
-        }, "");
-        return `{
-          TagsConnection: {
-            node: {
-              OR: [${matchTags}]
-            }
-          }
-        }`;
-      }
-      return "";
-    });
-
-    let postFilterString = computed(() => {
-      return `(
-                options: {
-                  sort: {
-                    createdAt: ASC
-                  }
-                }
-                where: {
-                  AND: [
-                    
-                    ${textFilter.value}
-                    ${tagFilter.value}
-                  ]
-                }
-              ) `;
+          {
+            title_CONTAINS: searchInput.value,
+          },
+          {
+            description_CONTAINS: searchInput.value,
+          },
+        ],
+      };
     });
 
     const updateRouterQueryParams = () => {
@@ -97,10 +64,22 @@ export default defineComponent({
       updateRouterQueryParams();
     };
 
-    let postQueryString = computed(() => {
-      let str = `
-        query {
-          posts ${postFilterString.value}{
+    let GET_POSTS = gql`
+        query getPosts(
+          $where: PostWhere
+          $resultsOrder: [PostSort]
+          $offset: Int
+          $limit: Int
+        ) {
+          postsCount(where: $where)
+          posts (
+            where: $where
+            options: {
+              sort: $resultsOrder,
+              offset: $offset,
+              limit: $limit
+            }
+          ){
             id
             title
             description
@@ -110,22 +89,11 @@ export default defineComponent({
             Tags {
               text
             }
+            CommentsAggregate {
+              count
+            }
           }
-        }`;
-      return str;
-    });
-
-    // Turn the query string into an actual GraphQL
-    // query. Any GraphQL syntax errors will be thrown here.
-    let GET_POSTS = computed(() => {
-      try {
-        return gql`
-          ${postQueryString.value}
-        `;
-      } catch (err) {
-        throw new Error(`Invalid query string: ${postQueryString.value}`);
-      }
-    });
+        }`
 
     const {
       error: postError,
@@ -133,7 +101,14 @@ export default defineComponent({
       loading: postLoading,
       refetch: refetchPosts,
       fetchMore,
-    } = useQuery(GET_POSTS, { first: 20, offset: 0 });
+    } = useQuery(GET_POSTS, { 
+      where: postWhere,
+      limit: 25, 
+      offset: 0,
+      resultsOrder: {
+        createdAt: "DESC"
+      }
+    });
 
     const reachedEndOfResults = ref(false);
 
@@ -181,9 +156,7 @@ export default defineComponent({
       placeData: null,
       postError,
       postLoading,
-      postQueryString,
       postResult,
-      postFilterString,
       reachedEndOfResults,
       refetchPosts,
       router,
@@ -196,7 +169,6 @@ export default defineComponent({
   },
   methods: {
     updateSearchResult(input: string) {
-      console.log('update search result ran ', input)
       this.searchInput = input
     },
     filterByTag(tag: string) {
@@ -217,7 +189,7 @@ export default defineComponent({
           <TagInput
             class="wide"
             :tag-options="tagOptionLabels"
-            :selected-tags="selectedTags"
+            :selected-tags="selectedTags.value"
             @setSelectedTags="setSelectedTags"
           />
           <CreateButton :to="createPostPath" :label="'Create Post'" />
@@ -233,9 +205,9 @@ export default defineComponent({
         v-else
         id="listView"
         class="relative text-lg"
-        :search-input="searchInput"
+        :search-input="searchInput.value"
         :posts="postResult.posts"
-        :selected-tags="selectedTags"
+        :selected-tags="selectedTags.value"
         @filterByTag="filterByTag"
       />
       <div class="grid justify-items-stretch">

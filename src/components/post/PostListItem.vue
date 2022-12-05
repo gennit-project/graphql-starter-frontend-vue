@@ -90,6 +90,7 @@ export default defineComponent({
             />
           </p>
         </div>
+        <p class="text-sm">{{ `${post.CommentsAggregate.count} ${post.CommentsAggregate.count === 1 ? 'comment' : 'comments'}` }}</p>
         <Tag
           :active="!!selectedTagMap[tag.text]"
           :key="tag"

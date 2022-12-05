@@ -6,12 +6,12 @@ export default defineComponent({
   props: {
     to: {
       type: String,
-      required: true
+      required: true,
     },
     label: {
       type: String,
-      required: true
-    }
+      required: true,
+    },
   },
   setup() {
     return { router };
@@ -22,17 +22,15 @@ export default defineComponent({
   <button
     @click="router.push(to)"
     class="
+      mt-2
       inline-flex
-      whitespace-nowrap
-      items-center
-      mt-1
-      mb-1
-      max-height-4
-      px-2.5
-      py-1.5
-      text-xs
+      bg-white
+      py-2
+      px-4
+      rounded-md
+      shadow-sm
+      text-sm
       font-medium
-      rounded
       text-blue-700
       bg-blue-100
       hover:bg-blue-200

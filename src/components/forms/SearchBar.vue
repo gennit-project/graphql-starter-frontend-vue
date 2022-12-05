@@ -27,7 +27,6 @@ export default defineComponent({
     //     .join("");
     // },
     updateSearchInput(e: any) {
-      console.log('event ', e.target.value)
       this.$emit(
         "updateSearchInput", e.target.value
         // this.removeQuotationMarks(e.target.value)
@@ -73,7 +72,7 @@ export default defineComponent({
         class="
           pl-10
           pr-3
-          py-1.5
+          py-2.5
           border border-gray-300
           rounded-md
           leading-5
@@ -84,7 +83,8 @@ export default defineComponent({
           focus:ring-1
           focus:ring-blue-500
           focus:border-blue-500
-          text-xs
+
+          flex-1 block min-w-0 pl-3 rounded sm:text-sm
         "
         :placeholder="searchPlaceholder"
         @keyup="updateSearchInput($event)"

@@ -11,6 +11,9 @@ export type PostData = {
   Tags: Array[TagData];
   updatedAt: string;
   createdAt: string;
+  CommentsAggregate: {
+    count: number;
+  }
 };
 
 interface CreateEditPostFormValues {

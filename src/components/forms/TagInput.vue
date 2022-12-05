@@ -60,12 +60,11 @@ export default defineComponent({
       <div
         class="
           tag-container
-          mt-1
           pt-0.5
           pb-0.5
           flex
           relative
-          rounded-md
+          rounded
           shadow-sm
           border border-gray-300
         "
