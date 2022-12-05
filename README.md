@@ -38,7 +38,7 @@ Start the database with the APOC plugin: https://neo4j.com/docs/graphql-manual/c
 Clone the back end:
 
 ```
-git clone https://github.com/catherineluse/graphql-vue-starter-backend.git
+git clone https://github.com/gennit-project/graphql-starter-backend.git
 ```
 
 
